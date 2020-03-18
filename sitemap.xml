@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/2020/03/05/%E5%AD%99%E9%80%B8%E5%AE%B8%E5%87%BA%E7%94%9F%E5%95%A6/</loc>
+    
+    <lastmod>2020-03-18T03:32:23.876Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2020/03/18/Mysql8-0-Windows-%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/</loc>
     
     <lastmod>2020-03-18T03:01:10.348Z</lastmod>
@@ -12,13 +19,6 @@
     <loc>http://yoursite.com/categories/index.html</loc>
     
     <lastmod>2020-03-05T09:44:03.760Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://yoursite.com/2020/03/05/%E5%AD%99%E9%80%B8%E5%AE%B8%E5%87%BA%E7%94%9F%E5%95%A6/</loc>
-    
-    <lastmod>2020-03-05T09:36:41.270Z</lastmod>
     
   </url>
   
