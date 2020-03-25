@@ -107,15 +107,15 @@
 
 
 
-<meta name="description" content="记录环境上 Canal 出现 CanalParseException: column size is not match for table 问题解决方案##问题起因####有戏的同学要在记录表增加一个字段，该表已经被 canal 监控起来。新增字段后程序发现接收不到 canal 发送的消息。 canal在处理表结构的DDL变更时采用了一种简单的策略，在内存里维护了一个当前数据库内表结构的镜像(通">
+<meta name="description" content="记录环境上 Canal 出现 CanalParseException: column size is not match for table 问题解决方案问题起因有戏的同学要在记录表增加一个字段，该表已经被 canal 监控起来。新增字段后程序发现接收不到 canal 发送的消息。canal在处理表结构的DDL变更时采用了一种简单的策略，在内存里维护了一个当前数据库内表结构的镜像(通过desc t">
 <meta property="og:type" content="article">
 <meta property="og:title" content="有戏问题解决方案.md">
 <meta property="og:url" content="http://yoursite.com/2020/03/25/%E6%9C%89%E6%88%8F%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/index.html">
 <meta property="og:site_name" content="Grayson&#39;s Blog">
-<meta property="og:description" content="记录环境上 Canal 出现 CanalParseException: column size is not match for table 问题解决方案##问题起因####有戏的同学要在记录表增加一个字段，该表已经被 canal 监控起来。新增字段后程序发现接收不到 canal 发送的消息。 canal在处理表结构的DDL变更时采用了一种简单的策略，在内存里维护了一个当前数据库内表结构的镜像(通">
+<meta property="og:description" content="记录环境上 Canal 出现 CanalParseException: column size is not match for table 问题解决方案问题起因有戏的同学要在记录表增加一个字段，该表已经被 canal 监控起来。新增字段后程序发现接收不到 canal 发送的消息。canal在处理表结构的DDL变更时采用了一种简单的策略，在内存里维护了一个当前数据库内表结构的镜像(通过desc t">
 <meta property="og:image" content="https://i.loli.net/2020/03/25/Zjki9MHTC3Gw2Wp.png">
 <meta property="article:published_time" content="2020-03-25T08:40:01.000Z">
-<meta property="article:modified_time" content="2020-03-25T08:41:40.298Z">
+<meta property="article:modified_time" content="2020-03-25T08:44:13.189Z">
 <meta property="article:author" content="Grayson">
 <meta property="article:tag" content="Canal">
 <meta name="twitter:card" content="summary">
@@ -433,16 +433,14 @@
       
 
       
-        <h1 id="记录环境上-Canal-出现-CanalParseException-column-size-is-not-match-for-table-问题解决方案"><a href="#记录环境上-Canal-出现-CanalParseException-column-size-is-not-match-for-table-问题解决方案" class="headerlink" title="记录环境上 Canal 出现 CanalParseException: column size is not match for table 问题解决方案"></a>记录环境上 Canal 出现 CanalParseException: column size is not match for table 问题解决方案</h1><p>##问题起因<br>####有戏的同学要在记录表增加一个字段，该表已经被 canal 监控起来。新增字段后程序发现接收不到 canal 发送的消息。</p>
-<p>canal在处理表结构的DDL变更时采用了一种简单的策略，在内存里维护了一个当前数据库内表结构的镜像(通过desc table获取)。<br>这样的内存表结构镜像的维护存在问题，如果当前在处理的binlog为历史时间段T0，当前时间为T1，存在的一些异常分支情况：   </p>
+        <h1 id="记录环境上-Canal-出现-CanalParseException-column-size-is-not-match-for-table-问题解决方案"><a href="#记录环境上-Canal-出现-CanalParseException-column-size-is-not-match-for-table-问题解决方案" class="headerlink" title="记录环境上 Canal 出现 CanalParseException: column size is not match for table 问题解决方案"></a>记录环境上 Canal 出现 CanalParseException: column size is not match for table 问题解决方案</h1><h2 id="问题起因"><a href="#问题起因" class="headerlink" title="问题起因"></a>问题起因</h2><h4 id="有戏的同学要在记录表增加一个字段，该表已经被-canal-监控起来。新增字段后程序发现接收不到-canal-发送的消息。"><a href="#有戏的同学要在记录表增加一个字段，该表已经被-canal-监控起来。新增字段后程序发现接收不到-canal-发送的消息。" class="headerlink" title="有戏的同学要在记录表增加一个字段，该表已经被 canal 监控起来。新增字段后程序发现接收不到 canal 发送的消息。"></a>有戏的同学要在记录表增加一个字段，该表已经被 canal 监控起来。新增字段后程序发现接收不到 canal 发送的消息。</h4><p>canal在处理表结构的DDL变更时采用了一种简单的策略，在内存里维护了一个当前数据库内表结构的镜像(通过desc table获取)。<br>这样的内存表结构镜像的维护存在问题，如果当前在处理的binlog为历史时间段T0，当前时间为T1，存在的一些异常分支情况：   </p>
 <ul>
 <li>假如在T0~T1的时间内，表结构A发生过增加列的DDL操作，那在处理T0时间段A表的binlog时，拿到的表结构为T1的镜像，就会出现列不匹配的情况. 比如之前的异常: column size is not match for table: xx , 12 vs 13</li>
 <li>假如在T0~T1发生了增加 C1列、删除了C2列，此时拿到的列的总数还是和T0时保持一致，但是对应的列会错位</li>
 <li>假如在T0~T1发生了drop table的DDL，此时拿表结构时会出现无法找到表的异常，一直阻塞整个binlog处理，比如not found [xx] in db</li>
 </ul>
 <hr>
-<p>##解决方案</p>
-<ol>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><ol>
 <li>打开 conf/canal.properties，选择持久化存储的方案，默认为H2，更改为 Mysql</li>
 </ol>
 <p>   canal.instance.tsdb.spring.xml=classpath:spring/tsdb/h2-tsdb.xml<br>   #canal.instance.tsdb.spring.xml=classpath:spring/tsdb/mysql-tsdb.xml</p>
@@ -674,7 +672,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#记录环境上-Canal-出现-CanalParseException-column-size-is-not-match-for-table-问题解决方案"><span class="nav-number">1.</span> <span class="nav-text">记录环境上 Canal 出现 CanalParseException: column size is not match for table 问题解决方案</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#记录环境上-Canal-出现-CanalParseException-column-size-is-not-match-for-table-问题解决方案"><span class="nav-number">1.</span> <span class="nav-text">记录环境上 Canal 出现 CanalParseException: column size is not match for table 问题解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题起因"><span class="nav-number">1.1.</span> <span class="nav-text">问题起因</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#有戏的同学要在记录表增加一个字段，该表已经被-canal-监控起来。新增字段后程序发现接收不到-canal-发送的消息。"><span class="nav-number">1.1.0.1.</span> <span class="nav-text">有戏的同学要在记录表增加一个字段，该表已经被 canal 监控起来。新增字段后程序发现接收不到 canal 发送的消息。</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决方案"><span class="nav-number">1.2.</span> <span class="nav-text">解决方案</span></a></li></ol></li></ol></div>
             
 
           </div>
