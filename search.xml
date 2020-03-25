@@ -1,6 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>有戏问题解决方案.md</title>
+    <url>/2020/03/25/%E6%9C%89%E6%88%8F%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/</url>
+    <content><![CDATA[<h1 id="记录环境上-Canal-出现-CanalParseException-column-size-is-not-match-for-table-问题解决方案"><a href="#记录环境上-Canal-出现-CanalParseException-column-size-is-not-match-for-table-问题解决方案" class="headerlink" title="记录环境上 Canal 出现 CanalParseException: column size is not match for table 问题解决方案"></a>记录环境上 Canal 出现 CanalParseException: column size is not match for table 问题解决方案</h1><p>##问题起因<br>####有戏的同学要在记录表增加一个字段，该表已经被 canal 监控起来。新增字段后程序发现接收不到 canal 发送的消息。</p>
+<p>canal在处理表结构的DDL变更时采用了一种简单的策略，在内存里维护了一个当前数据库内表结构的镜像(通过desc table获取)。<br>这样的内存表结构镜像的维护存在问题，如果当前在处理的binlog为历史时间段T0，当前时间为T1，存在的一些异常分支情况：   </p>
+<ul>
+<li>假如在T0~T1的时间内，表结构A发生过增加列的DDL操作，那在处理T0时间段A表的binlog时，拿到的表结构为T1的镜像，就会出现列不匹配的情况. 比如之前的异常: column size is not match for table: xx , 12 vs 13</li>
+<li>假如在T0~T1发生了增加 C1列、删除了C2列，此时拿到的列的总数还是和T0时保持一致，但是对应的列会错位</li>
+<li>假如在T0~T1发生了drop table的DDL，此时拿表结构时会出现无法找到表的异常，一直阻塞整个binlog处理，比如not found [xx] in db</li>
+</ul>
+<hr>
+<p>##解决方案</p>
+<ol>
+<li>打开 conf/canal.properties，选择持久化存储的方案，默认为H2，更改为 Mysql</li>
+</ol>
+<p>   canal.instance.tsdb.spring.xml=classpath:spring/tsdb/h2-tsdb.xml<br>   #canal.instance.tsdb.spring.xml=classpath:spring/tsdb/mysql-tsdb.xml</p>
+<ol start="2">
+<li>打开 instance 下的 instance.properties ，修改对应的参数</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>参数名</th>
+<th>默认值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>canal.instance.tsdb.enable</td>
+<td>true</td>
+<td>是否开启时序表结构的能力</td>
+</tr>
+<tr>
+<td>canal.instance.tsdb.dir</td>
+<td>${canal.file.data.dir:../conf}/${canal.instance.destination:}</td>
+<td>默认存储到conf/$instance</td>
+</tr>
+<tr>
+<td>canal.instance.tsdb.url</td>
+<td>jdbc:h2:${canal.instance.tsdb.dir}/h2;CACHE_SIZE=1000;MODE=MYSQL;</td>
+<td>jdbc链接串</td>
+</tr>
+<tr>
+<td>canal.instance.tsdb.dbUsername</td>
+<td>canal</td>
+<td>jdbc用户名，因为有自动创建表的能力，所以对该用户需要有create table的权限</td>
+</tr>
+<tr>
+<td>canal.instance.tsdb.dbPassword</td>
+<td>canal</td>
+<td>jdbc密码</td>
+</tr>
+</tbody></table>
+<p> For Example :  </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">\# table meta tsdb info  </span><br><span class="line"></span><br><span class="line">canal.instance.tsdb.enable&#x3D;true  </span><br><span class="line"></span><br><span class="line">canal.instance.tsdb.dir&#x3D;$&#123;canal.file.data.dir:..&#x2F;conf&#125;&#x2F;$&#123;canal.instance.destination:&#125;  </span><br><span class="line"> </span><br><span class="line">canal.instance.tsdb.url&#x3D;jdbc:h2:$&#123;canal.instance.tsdb.dir&#125;&#x2F;h2;CACHE_SIZE&#x3D;1000;MODE&#x3D;MYSQL;  </span><br><span class="line"></span><br><span class="line">\#canal.instance.tsdb.url&#x3D;jdbc:mysql:&#x2F;&#x2F;127.0.0.1:3306&#x2F;canal_tsdb  </span><br><span class="line"></span><br><span class="line">canal.instance.tsdb.dbUsername&#x3D;canal  </span><br><span class="line"></span><br><span class="line">canal.instance.tsdb.dbPassword&#x3D;canal</span><br></pre></td></tr></table></figure>
+
+<p>重启mysql，看到数据库中已经生成对应表镜像，解决问题。</p>
+<p><img src="https://i.loli.net/2020/03/25/Zjki9MHTC3Gw2Wp.png" alt="image.png"></p>
+]]></content>
+      <categories>
+        <category>线上问题解决思路</category>
+        <category>Canal</category>
+      </categories>
+      <tags>
+        <tag>Canal</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Mysql8.0 Windows 安装教程</title>
     <url>/2020/03/18/Mysql8-0-Windows-%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B/</url>
     <content><![CDATA[<p>#Mysql 8.0 安装教程</p>
